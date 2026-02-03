@@ -1,0 +1,621 @@
+:root {
+  /* layout */
+  --canvas-w: 1920px;
+  --canvas-h: 1080px;
+  --shelf-w: 390px;
+  --tab-h: 29px;
+  --gap: 16px;
+  --radius: 16px;
+
+  /* typography tokens */
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  --text: 14px;
+  --text-sm: 12px;
+  --text-lg: 18px;
+
+  /* color tokens (placeholder) */
+  --bg: #0b0c10;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panel-2: rgba(255, 255, 255, 0.08);
+  --stroke: rgba(255, 255, 255, 0.10);
+  --text-color: rgba(255, 255, 255, 0.86);
+  --muted: rgba(255, 255, 255, 0.55);
+  --accent: rgba(140, 180, 255, 0.95);
+
+  /* shelf collapsed height */
+  --shelf-collapsed-h: 34px;
+  /* matches figma timeline row height */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-color);
+  overflow: hidden;
+}
+
+.tele-portal {
+  height: 100%;
+  display: grid;
+  grid-template-columns: var(--shelf-w) 1fr var(--shelf-w);
+  grid-template-rows: calc(var(--tab-h) + 20px) 1fr;
+  gap: var(--gap);
+  padding: var(--gap);
+  transition: grid-template-columns 0.3s ease;
+}
+
+/* PATCH 5: Maximize Workspace */
+body.workspace-max .tele-portal {
+  grid-template-columns: var(--shelf-collapsed-h) 1fr var(--shelf-collapsed-h);
+}
+
+body.workspace-max .tele-left .shelf,
+body.workspace-max .tele-right .shelf {
+  height: var(--shelf-collapsed-h) !important;
+  min-height: var(--shelf-collapsed-h) !important;
+  padding: 0 8px;
+  /* Compact padding */
+  justify-content: center;
+  flex: 0 0 auto !important;
+  /* Force resize */
+}
+
+body.workspace-max .tele-left .shelf .shelf-body,
+body.workspace-max .tele-right .shelf .shelf-body,
+body.workspace-max .tele-left .splitter,
+/* Hide splitter in max mode */
+body.workspace-max .tele-left .shelf-header .shelf-title,
+body.workspace-max .tele-left .shelf-header .shelf-controls,
+body.workspace-max .tele-right .shelf-header .shelf-title,
+body.workspace-max .tele-right .shelf-header .shelf-controls {
+  display: none;
+}
+
+/* PATCH B: Gap between rails in mix mode */
+body.workspace-max .tele-left,
+body.workspace-max .tele-right {
+  gap: 10px;
+  /* Explicit gap between collapsed rails */
+}
+
+/* top tabs */
+.tele-tabs {
+  grid-column: 1 / 4;
+  grid-row: 1 / 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px;
+}
+
+.tele-tab {
+  height: var(--tab-h);
+  min-width: 147px;
+  padding: 0 6px 0 10px;
+  /* Adjusted right padding for close button */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  border-radius: 14px;
+  user-select: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.tele-tab.active {
+  background: var(--panel-2);
+  border-color: var(--accent);
+}
+
+.tele-tab .title {
+  font-size: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* PATCH 1: Tabs Close Button */
+.tele-tab .close {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  /* NO overlay */
+  border-radius: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  opacity: .6;
+  position: relative;
+}
+
+.tele-tab .close::before,
+.tele-tab .close::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  /* Slightly smaller for elegance */
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  transform-origin: center;
+}
+
+.tele-tab .close::before {
+  transform: rotate(45deg);
+}
+
+.tele-tab .close::after {
+  transform: rotate(-45deg);
+}
+
+.tele-tab .close:hover {
+  opacity: 1;
+}
+
+.tele-tab .close:active {
+  transform: scale(0.9);
+}
+
+/* columns */
+.tele-left {
+  grid-column: 1/2;
+  grid-row: 2/3;
+  display: flex;
+  flex-direction: column;
+  /* Gap is handled via splitter margin or specific layout logic */
+  gap: 0;
+}
+
+.tele-center {
+  grid-column: 2/3;
+  grid-row: 2/3;
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.tele-right {
+  grid-column: 3/4;
+  grid-row: 2/3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* PATCH 2: Splitter */
+.splitter {
+  height: 10px;
+  cursor: ns-resize;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+  /* Add some visual separation */
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.splitter:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+
+/* shelf panels */
+.shelf {
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* PATCH D: proper flex behavior */
+  flex: 1 1 auto;
+  transition: flex-grow 0.2s ease, min-height 0.2s ease;
+}
+
+/* Remove transition for height during drag, keep for other props */
+.tele-left .shelf.resizing {
+  transition: none;
+}
+
+.shelf .shelf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.shelf .shelf-title {
+  font-size: var(--text-sm);
+  letter-spacing: .02em;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.shelf .shelf-controls {
+  display: flex;
+  gap: 5px;
+}
+
+.shelf-btn {
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.shelf .shelf-body {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* shelf collapsed */
+.shelf.is-collapsed {
+  flex: 0 0 var(--shelf-collapsed-h) !important;
+  /* Force height */
+  min-height: var(--shelf-collapsed-h);
+  padding: 0 14px;
+  /* Ensure header fits perfectly */
+}
+
+.shelf.is-collapsed .shelf-header {
+  margin-bottom: 0;
+  height: 100%;
+}
+
+.shelf.is-collapsed .shelf-body {
+  display: none;
+}
+
+
+/* PATCH 3: DropSpace Toolbar Icons */
+.operator-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+
+.operator-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.05);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.operator-btn svg {
+  width: 20px;
+  height: 20px;
+  opacity: .85;
+  fill: currentColor;
+}
+
+.operator-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.operator-btn:hover svg {
+  opacity: 1;
+}
+
+.operator-btn.danger:hover {
+  border-color: rgba(255, 80, 80, 0.35);
+  background: rgba(255, 80, 80, 0.1);
+}
+
+
+/* PATCH 4: DropSpace Surface */
+.dropspace-surface {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 18px;
+  flex: 1;
+  /* Fill remaining space in shelf */
+  min-height: 120px;
+  /* Reasonable min height */
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.10) 1px, transparent 0) 0 0 / 18px 18px,
+    rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  position: relative;
+}
+
+
+/* PATCH 6: Agent Call UI */
+.call-interface {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  gap: 20px;
+}
+
+.call-pill {
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background: var(--panel-2);
+  border: 1px solid var(--stroke);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.call-pill:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.call-pill svg {
+  width: 28px;
+  height: 28px;
+  fill: var(--text-color);
+}
+
+.call-pill.active {
+  background: var(--accent);
+  box-shadow: 0 0 20px rgba(140, 180, 255, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.call-pill.active svg {
+  fill: #000;
+}
+
+@keyframes pulse {
+  0% {
+    src: 0 0 0 0 rgba(140, 180, 255, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(140, 180, 255, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(140, 180, 255, 0);
+  }
+}
+
+.call-status {
+  font-size: var(--text);
+  font-weight: 500;
+  color: var(--muted);
+}
+
+
+/* workspace graph area */
+.workspace-canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  /* Grid pattern or similar could go here */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  overflow: hidden;
+  /* Hide overflowing nodes during pan */
+}
+
+/* PATCH E: Workspace Camera */
+.workspace-camera {
+  position: absolute;
+  inset: 0;
+  transform: translate(0px, 0px);
+  will-change: transform;
+  width: 100%;
+  height: 100%;
+}
+
+.ws-node {
+  position: absolute;
+  min-width: 110px;
+  border: 1px solid var(--stroke);
+  background: rgba(40, 40, 45, 0.9);
+  border-radius: 18px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  cursor: grab;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.ws-node:active {
+  cursor: grabbing;
+}
+
+.ws-node .icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.ws-node .label {
+  font-size: var(--text);
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.ws-note {
+  position: absolute;
+  width: 291px;
+  height: 170px;
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  background: var(--panel-2);
+  padding: 14px;
+}
+
+.ws-note .title {
+  font-size: var(--text);
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.ws-note .content {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+/* timeline rows (figma: 390 x 34) */
+.timeline-row {
+  height: 34px;
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  margin-bottom: 10px;
+  font-size: var(--text-sm);
+  color: var(--text-color);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.timeline-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+
+/* PATCH A: DropSpace V2 - 3-Column Layout */
+.drop-extended-layout {
+  position: absolute;
+  inset: 40px;
+  /* Using inset 40 from old fullscreen wrap, user suggested 20 */
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(10, 10, 14, 0.92);
+  display: grid;
+  grid-template-rows: 52px 1fr;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.drop-extended-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.drop-extended-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.drop-extended-body {
+  display: grid;
+  grid-template-columns: 320px 1fr 380px;
+  /* Slight tweak to 320 for left rail */
+  gap: 16px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.drop-input-shelf,
+.drop-output-dock {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.drop-input-shelf h3,
+.drop-output-dock h3 {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.drop-canvas {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.10) 1px, transparent 0) 0 0 / 20px 20px,
+    rgba(255, 255, 255, 0.02);
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.drop-canvas:active {
+  cursor: grabbing;
+}
+
+.drop-output-dock pre {
+  margin: 0;
+  padding: 0;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(190, 255, 210, 0.85);
+  white-space: pre-wrap;
+  flex: 1;
+  overflow: auto;
+}
+
+/* dropspace fullscreen overlay container */
+.dropspace-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  /* Darker dim handled by layout bg */
+  display: none;
+  z-index: 9999;
+}
+
+.dropspace-fullscreen.is-open {
+  display: block;
+}

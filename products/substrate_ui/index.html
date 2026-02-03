@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link rel="stylesheet" href="styles.css"> <!-- Keeping old style for fallback -->
+    <link rel="stylesheet" href="tele-portal.css">
+    <title>TELE</title>
+</head>
+
+<body>
+    <div class="tele-portal">
+        <!-- Top: Tabs -->
+        <div class="tele-tabs">
+            <div class="tele-tab active">
+                <span class="title">Workspace 1</span>
+                <button class="close" aria-label="Close tab"></button>
+            </div>
+            <div class="tele-tab">
+                <span class="title">Adobe Premiere</span>
+                <button class="close" aria-label="Close tab"></button>
+            </div>
+            <div class="tele-tab">
+                <span class="title">Google Chrome</span>
+                <button class="close" aria-label="Close tab"></button>
+            </div>
+            <!-- Example Tab with pin (icon placeholder) -->
+
+            <div class="operator-btn" style="width: 29px; height: 29px; border-radius: 8px;">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+            </div>
+
+            <div style="margin-left: auto; display: flex; gap: 10px;">
+                <div class="operator-btn" id="btn-maximize" title="Maximize Workspace"
+                    style="width: 29px; height: 29px; border-radius: 8px;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 5h5v2H7v3H5V5zm10 0h5v5h-2V7h-3V5zm0 14h3v-3h2v5h-5v-2zM7 19h3v2H5v-5h2v3z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Left Column: Operational Scaffold -->
+        <div class="tele-left">
+
+            <!-- Top Left: Agent Presence -->
+            <div class="shelf" id="shelf-agent" style="flex: 0 0 200px;"> <!-- Start fixed -->
+                <div class="shelf-header" onclick="toggleShelf('shelf-agent')">
+                    <span class="shelf-title">Agent Presence</span>
+                    <div class="shelf-controls">
+                        <div class="shelf-btn">-</div>
+                    </div>
+                </div>
+                <div class="shelf-body">
+                    <div style="font-size: 13px; color: var(--muted);">
+                        Agent <b>Antigravity</b> is active.<br><br>
+                        <i>Listening to system events...</i>
+                        <div style="margin-top:20px; padding:10px; border:1px dashed var(--stroke); border-radius:8px;">
+                            Latest thought: "Applying V2 UI Patches."
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PATCH 2: Splitter -->
+            <div id="left-splitter" class="splitter"></div>
+
+            <!-- Bottom Left: DropSpace -->
+            <div class="shelf" id="shelf-dropspace" style="flex: 1 1 auto; min-height: 220px;">
+                <div class="shelf-header" onclick="toggleShelf('shelf-dropspace')">
+                    <span class="shelf-title">DropSpace</span>
+                    <div class="shelf-controls">
+                        <div class="shelf-btn" onclick="event.stopPropagation(); toggleDropSpaceFS()">⛶</div>
+                        <div class="shelf-btn">-</div>
+                    </div>
+                </div>
+                <div class="shelf-body">
+                    <!-- PATCH 3: Icons -->
+                    <div class="operator-bar">
+                        <button class="operator-btn" title="Add Note">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                            </svg>
+                        </button>
+                        <button class="operator-btn" title="Add Link">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
+                            </svg>
+                        </button>
+                        <button class="operator-btn" title="Connect (Pen)">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                            </svg>
+                        </button>
+                        <button class="operator-btn danger" title="Delete">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- PATCH 4: DropSpace Surface -->
+                    <div class="dropspace-surface">
+                        <span>Drag files here...</span>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <div class="timeline-row">Processed_Bundle_01.zip</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Center Column: Workspace -->
+        <div class="tele-center">
+            <!-- PATCH E: Camera Container -->
+            <div class="workspace-canvas" id="workspace">
+                <div class="workspace-camera" id="ws-camera">
+                    <!-- Nodes -->
+                    <div class="ws-node" style="top: 100px; left: 100px;">
+                        <div class="icon"></div>
+                        <div class="label">Risorse</div>
+                    </div>
+
+                    <div class="ws-node" style="top: 100px; left: 300px;">
+                        <div class="icon"></div>
+                        <div class="label">Calendario</div>
+                    </div>
+
+                    <div class="ws-node" style="top: 300px; left: 200px;">
+                        <div class="icon"></div>
+                        <div class="label">Word</div>
+                    </div>
+
+                    <div class="ws-node" style="top: 250px; left: 450px;">
+                        <div class="icon"></div>
+                        <div class="label">Gio's Watch</div>
+                    </div>
+
+                    <div class="ws-note" style="top: 450px; left: 150px;">
+                        <div class="title">Project Alpha</div>
+                        <div class="content">
+                            Remember to sync with the team on the new API endpoints before Friday.<br>
+                            - Check DB<br>
+                            - Update Auth
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Cognitive Scaffold -->
+        <div class="tele-right">
+
+            <!-- Top Right: Timeline -->
+            <div class="shelf" id="shelf-timeline">
+                <div class="shelf-header" onclick="toggleShelf('shelf-timeline')">
+                    <span class="shelf-title">Macchina del Tempo</span>
+                    <div class="shelf-controls">
+                        <div class="shelf-btn">
+                            < </div>
+                                <div class="shelf-btn"> > </div>
+                                <div class="shelf-btn">-</div>
+                        </div>
+                    </div>
+                    <div class="shelf-body">
+                        <div class="timeline-row">11:30 - Opened VS Code</div>
+                        <div class="timeline-row">11:32 - Edited substrate.ts</div>
+                        <div class="timeline-row">11:35 - Browser Search</div>
+                        <div class="timeline-row">11:40 - Figma Spec Review</div>
+                        <div class="timeline-row">11:42 - System Constitution</div>
+                    </div>
+                </div>
+
+                <!-- Bottom Right: Chiamata Agente -->
+                <div class="shelf" id="shelf-call">
+                    <div class="shelf-header" onclick="toggleShelf('shelf-call')">
+                        <span class="shelf-title">Chiamata Agente</span>
+                        <div class="shelf-controls">
+                            <div class="shelf-btn">-</div>
+                        </div>
+                    </div>
+                    <div class="shelf-body">
+                        <div class="call-interface">
+                            <div class="call-status">Idle</div>
+                            <div class="call-pill" onclick="toggleCallState(this)">
+                                <!-- Phone Icon -->
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.44-5.15-3.75-6.59-6.59l1.97-1.57c.26-.26.35-.65.24-1C9.13 6.42 8.93 5.23 8.93 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 14.93 14.93 0 0 0 16 16 0 .55.45 1 1 1h3.91c.55 0 1-.45 1-1 0-.55-.45-1-1-1z" />
+                                </svg>
+                            </div>
+                            <div style="font-size:12px; color:rgba(255,255,255,0.2);">Tap to speak</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- PATCH A: DropSpace V2 Fullscreen - 3 Columns -->
+        <div class="dropspace-fullscreen" id="ds-fullscreen">
+            <div class="drop-extended-layout">
+                <!-- Header -->
+                <div class="drop-extended-header">
+                    <h2>DropSpace Extended</h2>
+                    <div class="operator-btn" onclick="toggleDropSpaceFS()" style="width:32px; height:32px;">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="drop-extended-body">
+                    <!-- Left: Input Shelf -->
+                    <div class="drop-input-shelf">
+                        <h3>Input Stream</h3>
+                        <div class="timeline-row">File A.txt</div>
+                        <div class="timeline-row">Web Link B</div>
+                        <div style="margin-top:auto; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size:11px; color:var(--muted); margin-bottom:8px;">Quick Actions</div>
+                            <div class="operator-bar" style="margin-bottom:0; justify-content: space-between;">
+                                <button class="operator-btn" title="Add Note"><svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z" />
+                                    </svg></button>
+                                <button class="operator-btn" title="Add Link"><svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1z" />
+                                    </svg></button>
+                                <button class="operator-btn" title="Bundle"><svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" />
+                                    </svg></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center: Canvas -->
+                    <div class="drop-canvas">
+                        <span
+                            style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:rgba(255,255,255,0.1); pointer-events:none; font-weight:600; letter-spacing:1px;">DROP
+                            CANVAS</span>
+                        <!-- Nodes intended for drag to main workspace go here -->
+                    </div>
+
+                    <!-- Right: Operational Output -->
+                    <div class="drop-output-dock">
+                        <h3>Operational Output</h3>
+                        <pre>> Analyzing bundle structure...
+> 3 files detected.
+> extracting text content...
+> summarization complete.
+> ready for workspace integration.</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="renderer.js"></script>
+</body>
+
+</html>

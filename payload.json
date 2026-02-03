@@ -1,0 +1,6 @@
+{
+    "actionType": "CREATE_CLEANUP_PLAN",
+    "gestureProof": {
+        "type": "TEST"
+    }
+}

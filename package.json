@@ -1,0 +1,23 @@
+{
+    "name": "tele-monorepo",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "start:demo": "ts-node demo/runner.ts",
+        "install:all": "cd gateway_core && npm install && cd ../products/substrate && npm install && cd ../.."
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.30",
+        "@types/uuid": "^9.0.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "child_process": "^1.0.2",
+        "cors": "^2.8.6",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
+        "grammy": "^1.39.3",
+        "uuid": "^9.0.0"
+    }
+}
