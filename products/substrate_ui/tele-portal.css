@@ -423,6 +423,12 @@ body.workspace-max .tele-right {
   color: var(--muted);
 }
 
+.call-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.25);
+  margin-top: 8px;
+}
+
 
 /* workspace graph area */
 .workspace-canvas {

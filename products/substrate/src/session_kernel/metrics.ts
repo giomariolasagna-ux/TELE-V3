@@ -3,7 +3,7 @@ import { MetricSnapshotObject } from '../../../../integrations/gateway_bridge';
 import { v4 as uuidv4 } from 'uuid';
 
 export class MetricsCollector {
-    private currentSnapshot: MetricSnapshotObject;
+    private currentSnapshot!: MetricSnapshotObject;
 
     constructor() {
         this.reset();

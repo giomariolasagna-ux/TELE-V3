@@ -1,10 +1,26 @@
 // TELE Bridge Contract
 // Status: Canonical Phase 1
-export { UUID } from './index'; // Self-ref if needed, but actually we just export types directly below.
-
-// Status: Canonical Phase 1
 
 export type UUID = string;
+
+// Phase 10: Event and Artifact Types
+export type EventObject = {
+    id: UUID;
+    timestamp: string;
+    type: string;
+    description: string;
+    metadata?: any;
+};
+
+export type ArtifactObject = {
+    id: UUID;
+    type: string;
+    name: string;
+    description?: string;
+    preview?: string;
+    path?: string;
+    createdAt: string;
+};
 
 // --- Data Model Types for Bridge ---
 

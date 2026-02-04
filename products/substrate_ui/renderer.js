@@ -13,6 +13,31 @@ const $ = (selector) => document.querySelector(selector);
     ws.onopen = () => {
         console.log('[UI] Connected to Runtime');
         if (statusBox) statusBox.style.opacity = '1';
+
+        // Handshake
+        ws.send(JSON.stringify({
+            type: 'HELLO',
+            lastEventId: null
+        }));
+
+        // Chat Listener
+        const agentInput = document.getElementById('agent-input');
+        if (agentInput) {
+            agentInput.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    const text = agentInput.value.trim();
+                    if (text && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'USER_INPUT',
+                            payload: { text }
+                        }));
+                        agentInput.value = '';
+                    }
+                }
+            };
+        }
+
+
     };
 
     ws.onmessage = (event) => {
@@ -96,62 +121,119 @@ if (btnMax) {
     });
 }
 
-// PATCH 6: Call State (Mock)
-window.toggleCallState = function (el) {
-    el.classList.toggle('active');
-    const statusEl = el.parentElement.querySelector('.call-status');
-    if (el.classList.contains('active')) {
-        statusEl.innerText = "Listening...";
-        statusEl.style.color = "var(--accent)";
-    } else {
-        statusEl.innerText = "Idle";
-        statusEl.style.color = "var(--muted)";
+// PATCH 6: Call State - Real Voice Integration
+(function initVoiceButton() {
+    const voiceBtn = document.getElementById('voice-btn');
+    const voiceStatus = document.getElementById('voice-status');
+    const micIcon = document.getElementById('mic-icon');
+    const stopIcon = document.getElementById('stop-icon');
+
+    if (!voiceBtn) {
+        console.log('[Voice] Button not found, skipping init');
+        return;
     }
-}
 
+    let isListening = false;
 
-    // PATCH C: Splitter Logic Fix (Pointer Events)
-    (function initSplitter() {
-        const splitter = document.getElementById('left-splitter');
-        const shelfTop = document.getElementById('shelf-agent');
-        const shelfBottom = document.getElementById('shelf-dropspace');
-        const container = document.querySelector('.tele-left');
+    voiceBtn.addEventListener('click', async () => {
+        console.log('[Voice] Button clicked, isListening:', isListening);
 
-        if (!splitter || !shelfTop || !shelfBottom) return;
+        if (!isListening) {
+            // Start listening
+            voiceStatus.innerText = "Avvio...";
+            voiceStatus.style.color = "var(--accent)";
+            voiceBtn.classList.add('active');
 
-        splitter.addEventListener('pointerdown', (e) => {
-            e.preventDefault(); // Prevent text selection etc
-            splitter.setPointerCapture(e.pointerId);
+            try {
+                const res = await fetch('http://127.0.0.1:3000/voice/start-loop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
 
-            const startY = e.clientY;
-            const startHeight = shelfTop.getBoundingClientRect().height;
-
-            const onPointerMove = (moveEvent) => {
-                const dy = moveEvent.clientY - startY;
-                let newHeight = startHeight + dy;
-
-                // Constraints
-                if (newHeight < 90) newHeight = 90;
-                // 65% of container height max
-                if (newHeight > container.getBoundingClientRect().height * 0.65) {
-                    newHeight = container.getBoundingClientRect().height * 0.65;
+                if (res.ok) {
+                    isListening = true;
+                    voiceStatus.innerText = "🎙️ In ascolto...";
+                    if (micIcon) micIcon.style.display = 'none';
+                    if (stopIcon) stopIcon.style.display = 'block';
+                    console.log('[Voice] Started successfully');
+                } else {
+                    throw new Error('Backend error');
                 }
+            } catch (err) {
+                console.error('[Voice] Start failed:', err);
+                voiceStatus.innerText = "Errore connessione";
+                voiceStatus.style.color = "#f87171";
+                voiceBtn.classList.remove('active');
+            }
+        } else {
+            // Stop listening
+            voiceStatus.innerText = "Fermo...";
 
-                shelfTop.style.flex = `0 0 ${newHeight}px`;
-                // Bottom shelf is flex: 1, so it auto-adjusts
-            };
+            try {
+                await fetch('http://127.0.0.1:3000/voice/stop-loop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (err) {
+                console.error('[Voice] Stop error:', err);
+            }
 
-            const onPointerUp = (upEvent) => {
-                splitter.releasePointerCapture(upEvent.pointerId);
-                splitter.removeEventListener('pointermove', onPointerMove);
-                splitter.removeEventListener('pointerup', onPointerUp);
-                // Save state if needed
-            };
+            isListening = false;
+            voiceBtn.classList.remove('active');
+            voiceStatus.innerText = "Premi per parlare";
+            voiceStatus.style.color = "var(--muted)";
+            if (micIcon) micIcon.style.display = 'block';
+            if (stopIcon) stopIcon.style.display = 'none';
+            console.log('[Voice] Stopped');
+        }
+    });
 
-            splitter.addEventListener('pointermove', onPointerMove);
-            splitter.addEventListener('pointerup', onPointerUp);
-        });
-    })();
+    console.log('[Voice] Button initialized');
+})();
+
+
+// PATCH C: Splitter Logic Fix (Pointer Events)
+(function initSplitter() {
+    const splitter = document.getElementById('left-splitter');
+    const shelfTop = document.getElementById('shelf-agent');
+    const shelfBottom = document.getElementById('shelf-dropspace');
+    const container = document.querySelector('.tele-left');
+
+    if (!splitter || !shelfTop || !shelfBottom) return;
+
+    splitter.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // Prevent text selection etc
+        splitter.setPointerCapture(e.pointerId);
+
+        const startY = e.clientY;
+        const startHeight = shelfTop.getBoundingClientRect().height;
+
+        const onPointerMove = (moveEvent) => {
+            const dy = moveEvent.clientY - startY;
+            let newHeight = startHeight + dy;
+
+            // Constraints
+            if (newHeight < 90) newHeight = 90;
+            // 65% of container height max
+            if (newHeight > container.getBoundingClientRect().height * 0.65) {
+                newHeight = container.getBoundingClientRect().height * 0.65;
+            }
+
+            shelfTop.style.flex = `0 0 ${newHeight}px`;
+            // Bottom shelf is flex: 1, so it auto-adjusts
+        };
+
+        const onPointerUp = (upEvent) => {
+            splitter.releasePointerCapture(upEvent.pointerId);
+            splitter.removeEventListener('pointermove', onPointerMove);
+            splitter.removeEventListener('pointerup', onPointerUp);
+            // Save state if needed
+        };
+
+        splitter.addEventListener('pointermove', onPointerMove);
+        splitter.addEventListener('pointerup', onPointerUp);
+    });
+})();
 
 
 // PATCH E: Workspace Panning (Background Drag)
@@ -233,4 +315,44 @@ window.toggleCallState = function (el) {
             dragItem = null;
         }
     });
+})();
+
+// PHASE 11: Builder UI Logic
+(function initBuilder() {
+    const patchesContainer = document.getElementById('builder-patches');
+    const stateEl = document.getElementById('builder-state');
+    const retryBtn = document.getElementById('builder-retry');
+
+    if (!patchesContainer) return;
+
+    // Track patches
+    const patches = [];
+
+    window.addBuilderPatch = function (patch) {
+        patches.push(patch);
+        renderPatches();
+    };
+
+    window.updateBuilderState = function (state) {
+        if (stateEl) {
+            stateEl.innerText = state;
+            stateEl.style.color = state === 'Working' ? 'var(--accent)' : 'var(--muted)';
+        }
+    };
+
+    function renderPatches() {
+        patchesContainer.innerHTML = patches.slice(-5).map(p => `
+            <div style="padding: 6px 8px; margin-bottom: 4px; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 11px;">
+                <span style="color: ${p.status === 'applied' ? '#4ade80' : p.status === 'failed' ? '#f87171' : 'var(--muted)'};">●</span>
+                ${p.title.substring(0, 30)}${p.title.length > 30 ? '...' : ''}
+            </div>
+        `).join('');
+    }
+
+    if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+            console.log('[Builder] Retry clicked');
+            // Could send WS message to trigger retry
+        });
+    }
 })();

@@ -6,9 +6,9 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 1200,
         height: 800,
-        transparent: true, // Requires valid system setup, might fail on some VMs but safe to try
-        frame: false,      // Frameless for "Overlay" feel
-        alwaysOnTop: true,
+        transparent: false, // Changed to false for better compatibility
+        frame: true,      // Changed to true for standard window
+        alwaysOnTop: false,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false // For MVP speed to access IPC

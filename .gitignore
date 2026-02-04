@@ -2,8 +2,10 @@ node_modules/
 dist/
 out/
 build/
-.tele/runtime/
-.tele/bootstamp.json
+.tele/
 *.log
 .DS_Store
 Thumbs.db
+
+products/substrate/.wwebjs_cache/
+products/substrate/bin/
