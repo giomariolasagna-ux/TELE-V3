@@ -10,6 +10,9 @@ import { GatewayCore } from '../gateway_core/src/index';
 import { SubstrateServer } from '../products/substrate/src/server';
 import { spawn } from 'child_process';
 
+// God Mode System Imports
+import { initializeGodMode, globalPlanner, Plan, PlanNode } from '../products/substrate/src/skills';
+
 // "Runtime" acts as the Bridge Implementation on the Product side
 // But wait, the Gateway INVOKES the bridge. The Product PROVIDES the bridge logic?
 // No, usually the Bridge connects them.
@@ -41,34 +44,46 @@ class SubstrateBridge implements GatewayBridge {
     }
 
     async onIntent(intent: IntentEventObject): Promise<void> {
-        console.log(`[Substrate] Received Intent: ${intent.id}`);
+        console.log(`[Substrate] Received Intent: ${intent.id} - "${intent.rawContent}"`);
+
+        // =====================================================================
+        // GOD MODE SYSTEM INTEGRATION
+        // =====================================================================
+
+        // Try to match intent using the new Hierarchical Planner
+        try {
+            const plan = globalPlanner.createPlanFromNL(intent.rawContent);
+            if (plan.rootNode) {
+                console.log(`[GodMode] Intent matched God Mode skill! Executing plan "${plan.id}"...`);
+                const result = await globalPlanner.executePlan(plan);
+
+                if (result.success) {
+                    console.log(`[GodMode] Plan executed successfully.`);
+                    await this.gatewayCore.broadcastUpdate({
+                        eventId: intent.id,
+                        status: 'DONE',
+                        progress: 100,
+                        message: `God Mode: Plan "${plan.id}" executed successfully.`
+                    });
+                    return;
+                } else {
+                    console.error(`[GodMode] Plan failed: ${result.error}`);
+                    // Continue to legacy planner as fallback or report error
+                }
+            }
+        } catch (error: any) {
+            console.error(`[GodMode] Planner error: ${error.message}`);
+        }
+
+        // =====================================================================
+        // LEGACY PLANNER FALLBACK
+        // =====================================================================
+
         const actions = await this.planner.plan(intent);
 
         for (const action of actions) {
-            // Persist Action to Store so UI can see it
-            // (Assuming executor normally does this? No executor logic above didn't save Action, only Plan)
-            // We should ensure Action is stored. 
-            // Only Phase 4 introduced 'getAllActions'.
-            // I need to add 'saveAction' to ObjectStore or let Executor handle it.
-            // But if we don't call Executor...
-            // I will add Persist logic here or assume Executor handles "Pending" state if I modify Executor.
-            // Better: Modify Executor to handle 'READY' state vs 'RUNNING'?
-            // No, simply:
             if (action.requiresGesture) {
                 console.log(`[Runner] Action ${action.id} requires GESTURE. Parking in Store.`);
-                // We need to save it.
-                // Accessing store via executor? Or direct.
-                // SubstrateBridge doesn't have Store.
-                // I'll cheat for MVP: Call executor.execute but Executor will handle "Status: READY -> Emit Update -> Return" if I change Executor?
-                // No, clean way:
-                // `Runner` shouldn't execute.
-                // `Runner` needs access to Store. 
-                // But `SubstrateBridge` was constructed with `(gw, planner)`.
-                // I'll update Executor to accept a `Parking` mode or just have Runner do nothing?
-                // If I do nothing, it's in memory? No.
-                // I MUST save it to ObjectStore.
-                // I will add `saveAction` to `Executor` or `Store` and pass Store to Bridge.
-                // Or: Pass action to Executor, and Executor checks `requiresGesture`. If true, it saves as READY and returns.
                 await this.executor.park(action);
             } else {
                 await this.executor.execute(action);
@@ -102,6 +117,13 @@ class SubstrateBridge implements GatewayBridge {
 // Main Construction
 async function main() {
     console.log("Initializing TELE Substrate Phase 1...");
+
+    // Initialize God Mode System
+    try {
+        await initializeGodMode();
+    } catch (error: any) {
+        console.error(`[GodMode] Initialization failed: ${error.message}`);
+    }
 
     const store = new ObjectStore();
     const security = new SecurityGate();
@@ -188,7 +210,9 @@ async function main() {
 
     console.log("TELE Session Kernel + Voice Ready.");
     console.log("Commands (Text or Voice):");
-    console.log("  - 'scan temp'");
+    console.log("  - 'scan cleanup' (God Mode)");
+    console.log("  - 'check disk' (God Mode)");
+    console.log("  - 'play music' (God Mode)");
     console.log("  - 'stop' (Interrupts running tasks)");
     console.log("  - 'confirm <id>'");
 }
